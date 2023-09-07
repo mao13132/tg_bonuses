@@ -27,35 +27,79 @@ class BotDB:
         try:
             self.cursor.execute(f"CREATE TABLE IF NOT EXISTS "
                                 f"users (id_pk INTEGER PRIMARY KEY AUTOINCREMENT, "
-                                f"id_chat TEXT, id_msg TEXT, date_post DATETIME, date DATETIME, other TEXT)")
+                                f"id_user TEXT, login TEXT, status TEXT, join_date DATETIME, balance INT  DEFAULT 0, "
+                                f"other TEXT)")
 
         except Exception as es:
-            print(f'SQL исключение check_table monitoring {es}')
+            print(f'SQL исключение check_table users {es}')
 
-    def exist_message(self, id_chat, id_msg, date_post):
-        result = self.cursor.execute(f"SELECT * FROM monitoring "
-                                     f"WHERE id_chat='{id_chat}' AND id_msg='{id_msg}' AND date_post='{date_post}'")
+        try:
+            self.cursor.execute(f"CREATE TABLE IF NOT EXISTS "
+                                f"products (id_pk INTEGER PRIMARY KEY AUTOINCREMENT, "
+                                f"name TEXT, descript TEXT, price INT, img TEXT, other TEXT)")
+
+        except Exception as es:
+            print(f'SQL исключение check_table products {es}')
+
+    def check_or_add_user(self, id_user, login, status):
+
+        result = self.cursor.execute(f"SELECT * FROM users WHERE id_user='{id_user}'")
 
         response = result.fetchall()
 
         if response == []:
+            now_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+            self.cursor.execute("INSERT OR IGNORE INTO users ('id_user', 'login',"
+                                "'status', "
+                                "'join_date') VALUES (?,?,?,?)",
+                                (id_user, login, status,
+                                 now_date))
+
+            self.conn.commit()
+
+            return True
+
+        return False
+
+    def add_product(self, name, descript, price, image_patch):
+        try:
+            self.cursor.execute("INSERT OR IGNORE INTO products ('name', 'descript',"
+                                "'price', 'img') VALUES (?,?,?,?)",
+                                (name, descript, price, image_patch))
+
+            self.conn.commit()
+        except:
             return False
 
         return True
 
-    def add_message(self, id_chat, id_msg, date_post):
+    def get_balance(self, id_user):
 
+        result = self.cursor.execute(f"SELECT balance FROM users WHERE id_user='{id_user}'")
 
-        now_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        response = result.fetchall()
 
-        self.cursor.execute("INSERT OR IGNORE INTO monitoring ('id_chat',"
-                            "'id_msg', "
-                            "'date', 'date_post') VALUES (?,?,?,?)",
-                            (id_chat, id_msg,
-                             now_date, date_post,))
+        try:
+            response = response[0][0]
+        except:
+            return False
 
-        self.conn.commit()
-        return True
+        return response
+
+    def get_all_products(self):
+        result = self.cursor.execute("SELECT id_pk, name, descript, price, img FROM products")
+
+        response = result.fetchall()
+
+        return response
+
+    def get_products_by_id(self, id_k):
+        result = self.cursor.execute(f"SELECT id_pk, name, descript, price, img FROM products WHERE id_pk = '{id_k}'")
+
+        response = result.fetchall()[0]
+
+        return response
 
     def close(self):
         # Закрытие соединения
