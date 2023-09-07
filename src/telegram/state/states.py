@@ -25,6 +25,8 @@ class States(StatesGroup):
 
     ad_text = State()
 
+    zero = State()
+
 
 async def add_name_product(message: Message, state: FSMContext):
     name_product = message.text
@@ -208,6 +210,41 @@ async def ad_text(message: Message, state: FSMContext):
     await States.ad_text.set()
 
 
+async def zero(message: Message, state: FSMContext):
+    id_user_zero = message.text
+
+    if not id_user_zero.isdigit():
+        error = (f'⚠️ Не верно указан ID пользователя. Попробуйте ещё раз')
+        print(error)
+
+        await Sendler_msg.send_msg_message(message, error, None)
+
+        return False
+
+    check_user = BotDB.exist_id_user(id_user_zero)
+
+    if not check_user:
+        error = (f'⚠️ Указан несуществующий ID пользователя. Попробуйте ещё раз')
+        print(error)
+
+        await Sendler_msg.send_msg_message(message, error, None)
+
+        return False
+
+    res_add = BotDB.zero_balance(id_user_zero)
+
+    if res_add:
+        _MSG = f'✅ Обнулил баланс у {id_user_zero}'
+    else:
+        _MSG = f'🚫️ ошибка при обнуление баланса у {id_user_zero}'
+
+    keyb = ClientKeyb().admin_menu()
+
+    await Sendler_msg().sendler_photo_message(message, ADMIN_IMG, _MSG, keyb)
+
+    await state.finish()
+
+
 def register_state(dp: Dispatcher):
     dp.register_message_handler(add_name_product, state=States.add_name_product)
 
@@ -222,3 +259,5 @@ def register_state(dp: Dispatcher):
     dp.register_message_handler(sendler_photo, state=States.sendler_photo, content_types=[types.ContentType.ANY])
 
     dp.register_message_handler(ad_text, state=States.ad_text)
+
+    dp.register_message_handler(zero, state=States.zero)

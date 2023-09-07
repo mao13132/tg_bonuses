@@ -302,10 +302,44 @@ async def ye_se_mit(call: types.CallbackQuery, state: FSMContext):
     return True
 
 
+async def zero(call: types.CallbackQuery):
+    await Sendler_msg.log_client_call(call)
+
+    admin_text = (f'⚠️ Пришлите ID пользователя которому необходимо обнулить баланс')
+
+    keyboard = ClientKeyb().admin_back()
+
+    await Sendler_msg.send_msg_call(call, admin_text, keyboard)
+
+    await States.zero.set()
+
+
+async def list_users(call: types.CallbackQuery):
+    await Sendler_msg.log_client_call(call)
+
+    list_users_ = BotDB.get_all_users_all_data()
+
+    if list_users_ == []:
+
+        text_admin = (f'⛔️ В настоящий момент список пользователей пуст')
+
+    else:
+
+        text_admin = (f'<b>Список пользователей:</b>\n\n')
+
+        for product in list_users_:
+            text_admin += f'ID: {product[1]} login: {product[2]} Баланс: {product[5]} ₽\n'
+
+    keyb = ClientKeyb().admin_back()
+
+    await Sendler_msg().sendler_photo_call(call, LOGO, text_admin, keyb)
+
 
 def register_callbacks(dp: Dispatcher):
     dp.register_callback_query_handler(admin_panel, text_contains='admin_panel', state='*')
+
     dp.register_callback_query_handler(ower_state, text_contains='ower_state', state='*')
+
     dp.register_callback_query_handler(menu_back, text_contains='menu_back')
 
     dp.register_callback_query_handler(balance, text_contains='balance')
@@ -327,3 +361,7 @@ def register_callbacks(dp: Dispatcher):
     dp.register_callback_query_handler(allsendler, text_contains='allsendler')
 
     dp.register_callback_query_handler(ye_se_mit, text_contains='ye_se_mit', state='*')
+
+    dp.register_callback_query_handler(zero, text_contains='zero')
+
+    dp.register_callback_query_handler(list_users, text_contains='list_users')

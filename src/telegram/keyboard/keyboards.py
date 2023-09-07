@@ -49,6 +49,10 @@ class ClientKeyb(Call_admin):
 
         self._start_key.add(InlineKeyboardButton(text=f'📨 Рассылка', callback_data='allsendler'))
 
+        self._start_key.add(InlineKeyboardButton(text=f'🕳 Обнулить баланс', callback_data='zero'))
+
+        self._start_key.add(InlineKeyboardButton(text=f'👨‍👩‍👧‍👦 Пользователи', callback_data='list_users'))
+
         self._start_key.add(InlineKeyboardButton(text=f'🔙 Назад', callback_data='menu_back'))
 
         return self._start_key

@@ -103,6 +103,14 @@ class BotDB:
 
         return True
 
+    def zero_balance(self, id_user):
+
+        result = self.cursor.execute(f"UPDATE users SET balance = '0' WHERE id_user = '{id_user}'")
+
+        self.conn.commit()
+
+        return True
+
     def get_all_products(self):
         result = self.cursor.execute("SELECT id_pk, name, descript, price, img FROM products")
 
@@ -124,6 +132,13 @@ class BotDB:
 
         return response
 
+    def get_all_users_all_data(self):
+        result = self.cursor.execute(f"SELECT * FROM users")
+
+        response = result.fetchall()
+
+        return response
+
     def delete_product(self, id_product):
 
         try:
@@ -137,6 +152,17 @@ class BotDB:
             return False
 
         return True
+
+    def exist_id_user(self, id_user):
+
+        result = self.cursor.execute(f"SELECT id_pk FROM users WHERE id_user='{id_user}'")
+
+        response = result.fetchall()
+
+        if response == []:
+            return False
+        else:
+            return True
 
     def close(self):
         # Закрытие соединения
