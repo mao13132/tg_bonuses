@@ -87,6 +87,14 @@ class BotDB:
 
         return response
 
+    def update_balance(self, id_user, total_balance):
+
+        result = self.cursor.execute(f"UPDATE users SET balance = '{total_balance}' WHERE id_user = '{id_user}'")
+
+        self.conn.commit()
+
+        return True
+
     def get_all_products(self):
         result = self.cursor.execute("SELECT id_pk, name, descript, price, img FROM products")
 

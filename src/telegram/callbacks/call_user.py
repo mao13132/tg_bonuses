@@ -37,7 +37,7 @@ async def balance(call: types.CallbackQuery):
 
     balance = BotDB.get_balance(id_user)
 
-    _msg = f'🍀 Ваш баланс: {balance} бонусных рублей'
+    _msg = f'🍀 Ваш баланс: {balance} ₽'
 
     keyb = ClientKeyb().menu_back()
 
@@ -166,9 +166,76 @@ async def go(call: types.CallbackQuery, state: FSMContext):
                      f'{descript_product}\n\n'
                      f'<b>{price_product} ₽</b>')
 
-    keyb = ClientKeyb().buy_menu()
+    keyb = ClientKeyb().buy_menu(id_product, id_user)
 
     await Sendler_msg().sendler_photo_call(call, img_product, _product_text, keyb)
+
+
+async def buy_(call: types.CallbackQuery, state: FSMContext):
+    await Sendler_msg.log_client_call(call)
+
+    id_user = call.message.chat.id
+
+    try:
+
+        _, id_product = str(call.data).split('_')
+
+    except:
+
+        error = (f'Ошибка при разборе buy_')
+
+        print(error)
+
+        await Sendler_msg.send_msg_call(call, error, None)
+
+        return False
+
+    _product = BotDB.get_products_by_id(id_product)
+
+    name_product = _product[1]
+
+    descript_product = _product[2]
+
+    price_product = _product[3]
+
+    img_product = _product[4]
+
+    balance = BotDB.get_balance(id_user)
+
+    balance = int(balance)
+
+    price_product = int(price_product)
+
+    if price_product > balance:
+        _product_text = (f'⚠️ К сожалению, я не могу выполнить вашу покупку на данный момент, '
+                         f'так как у вас недостаточно средств на балансе для покупки.\n\n'
+                         f'Ваш баланс: {balance}')
+
+        print(f'{id_user} {_product_text}')
+
+        keyb = ClientKeyb().buy_menu(id_product, id_user)
+
+        await Sendler_msg().new_sendler_photo_call(call, img_product, _product_text, keyb)
+
+        return False
+
+    # TODO списать баланс
+
+    # TODO запросить ссылку
+
+    _product_text = (f'🔥 Укажите трейд-ссылку для получения товара')
+
+    keyb = ClientKeyb().ower_state()
+
+    await Sendler_msg().sendler_photo_call(call, img_product, _product_text, keyb)
+
+    await States.add_traide_lik.set()
+
+    async with state.proxy() as data:
+        data['id_product'] = id_product
+        data['product'] = _product
+        data['balance'] = balance
+
 
 def register_callbacks(dp: Dispatcher):
     dp.register_callback_query_handler(admin_panel, text_contains='admin_panel', state='*')
@@ -186,3 +253,5 @@ def register_callbacks(dp: Dispatcher):
     dp.register_callback_query_handler(back_price_descript, text_contains='back_price_descript', state='*')
 
     dp.register_callback_query_handler(go, text_contains='go_')
+
+    dp.register_callback_query_handler(buy_, text_contains='buy_')

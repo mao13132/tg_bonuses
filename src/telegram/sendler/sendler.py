@@ -21,15 +21,20 @@ class Sendler_msg:
     async def sendler_to_admin(message: Message, text, keyb):
         for admin in ADMIN:
             try:
-                await message.bot.send_message(int(admin), text, reply_markup=keyb)
+                msg_ = await message.bot.send_message(int(admin), text, reply_markup=keyb)
             except:
                 try:
-                    await message.bot.send_message(int(admin), text)
+                    msg_ = await message.bot.send_message(int(admin), text)
                 except Exception as es:
                     if str(es) == 'Chat not found':
                         print(f'Бот не имеет права писать админу, напишите /start боту')
                     else:
                         print(f'Ошибка при отправке сообщение админу текст: "{text}" {es}')
+
+            try:
+                await message.bot.pin_chat_message(chat_id=int(admin), message_id=msg_['message_id'])
+            except:
+                pass
 
     async def sendler_admin_call(call: types.CallbackQuery, text, keyb):
         for admin in ADMIN:
@@ -179,7 +184,7 @@ class Sendler_msg:
                 file_photo = types.InputMediaPhoto(file)
 
                 await call.message.edit_media(media=file_photo)
-                await call.message.edit_caption(caption=text, reply_markup=keyb,)
+                await call.message.edit_caption(caption=text, reply_markup=keyb, )
         except:
             try:
                 with open(photo, 'rb') as file:

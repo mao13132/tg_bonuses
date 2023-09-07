@@ -97,10 +97,13 @@ class ClientKeyb(Call_admin):
 
         return self._start_key
 
-    def buy_menu(self, id_pk):
+    def buy_menu(self, id_pk, id_user):
         self._start_key = InlineKeyboardMarkup(row_width=1)
 
         self._start_key.add(InlineKeyboardButton(text=f'💎 Купить', callback_data=f'buy_{id_pk}'))
+
+        if str(id_user) in ADMIN:
+            self._start_key.add(InlineKeyboardButton(text=f'🗑 Удалить', callback_data=f'del_{id_pk}'))
 
         self._start_key.add(InlineKeyboardButton(text=f'🔙 Назад', callback_data='salle'))
 

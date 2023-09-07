@@ -19,6 +19,8 @@ class States(StatesGroup):
 
     add_img_product = State()
 
+    add_traide_lik = State()
+
 
 async def add_name_product(message: Message, state: FSMContext):
     name_product = message.text
@@ -113,11 +115,68 @@ async def add_img_product(message: Message, state: FSMContext):
     await state.finish()
 
 
+async def add_traide_lik(message: Message, state: FSMContext):
+    await Sendler_msg.log_client_message(message)
+
+    traide_link = message.text
+
+    id_product = ''
+
+    _product = ''
+
+    balance = ''
+
+    id_user = message.chat.id
+
+    async with state.proxy() as data:
+
+        id_product = data['id_product']
+
+        _product = data['product']
+
+        balance = data['balance']
+
+    name_product = _product[1]
+
+    descript_product = _product[2]
+
+    price_product = _product[3]
+
+    img_product = _product[4]
+
+    total_balance = balance - int(price_product)
+
+    res_refresh_balance = BotDB.update_balance(id_user, total_balance)
+
+    _msg = f'✅ Покупка успешна совершена. Ожидайте выдачу товара'
+
+    keyb = ClientKeyb().start_keyb(id_user)
+
+    await Sendler_msg().sendler_photo_message(message, LOGO, _msg, keyb)
+
+    await state.finish()
+
+    _msg_admin = f'🛎 Совершена покупка\n\n' \
+                 f'Пользователь "{id_user}"\n' \
+                 f'Товар "{name_product}"\n' \
+                 f'Цена: {price_product} ₽\n\n' \
+                 f'Трейд-ссылка: {traide_link}'
+
+    msg_ = await Sendler_msg.sendler_to_admin(message, _msg_admin, None)
+
+
+
+    # TODO списать баллы и отослать сообщение администратору
+
+
+
 def register_state(dp: Dispatcher):
     dp.register_message_handler(add_name_product, state=States.add_name_product)
 
     dp.register_message_handler(add_descript_product, state=States.add_descript_product)
 
     dp.register_message_handler(add_price_product, state=States.add_price_product)
+
+    dp.register_message_handler(add_traide_lik, state=States.add_traide_lik)
 
     dp.register_message_handler(add_img_product, state=States.add_img_product, content_types=[types.ContentType.ANY])
