@@ -1,6 +1,7 @@
 from aiogram import Dispatcher, types
 
 from src.telegram.logic._start import start
+from src.telegram.sendler.all_sendler import AllSendler
 
 from src.telegram.sendler.sendler import *
 
@@ -237,6 +238,71 @@ async def buy_(call: types.CallbackQuery, state: FSMContext):
         data['balance'] = balance
 
 
+async def del_(call: types.CallbackQuery, state: FSMContext):
+    await Sendler_msg.log_client_call(call)
+
+    id_user = call.message.chat.id
+
+    try:
+
+        _, id_product = str(call.data).split('_')
+
+    except:
+
+        error = (f'Ошибка при разборе del_')
+
+        print(error)
+
+        await Sendler_msg.send_msg_call(call, error, None)
+
+        return False
+
+    res_del = BotDB.delete_product(id_product)
+
+    if res_del:
+        _product_text = (f'✅ Товар успешно удален')
+    else:
+        _product_text = (f'⛔️ Ошибка при удаление')
+
+    keyb = ClientKeyb().start_keyb(id_user)
+
+    await Sendler_msg().sendler_photo_call(call, LOGO, _product_text, keyb)
+
+
+async def allsendler(call: types.CallbackQuery):
+    await Sendler_msg.log_client_call(call)
+
+    msg = f'📱 Пришлите изображение для рассылки'
+
+    keyb = ClientKeyb().admin_back()
+
+    await Sendler_msg.send_msg_call(call, msg, keyb)
+
+    await States.sendler_photo.set()
+
+
+async def ye_se_mit(call: types.CallbackQuery, state: FSMContext):
+    await Sendler_msg.log_client_call(call)
+
+    async with state.proxy() as data:
+        try:
+            if data['text_send']:
+                await call.answer('Начал рассылку', show_alert=True)
+        except:
+            await call.answer('Устаревшая кнопка', show_alert=True)
+
+            return False
+
+        count_send_users = await AllSendler(BotDB, call, data).send_group()
+
+    await call.message.reply(f'Рассылка выполнена {count_send_users} пользователям')
+
+    await state.finish()
+
+    return True
+
+
+
 def register_callbacks(dp: Dispatcher):
     dp.register_callback_query_handler(admin_panel, text_contains='admin_panel', state='*')
     dp.register_callback_query_handler(ower_state, text_contains='ower_state', state='*')
@@ -255,3 +321,9 @@ def register_callbacks(dp: Dispatcher):
     dp.register_callback_query_handler(go, text_contains='go_')
 
     dp.register_callback_query_handler(buy_, text_contains='buy_')
+
+    dp.register_callback_query_handler(del_, text_contains='del_')
+
+    dp.register_callback_query_handler(allsendler, text_contains='allsendler')
+
+    dp.register_callback_query_handler(ye_se_mit, text_contains='ye_se_mit', state='*')

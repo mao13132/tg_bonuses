@@ -21,6 +21,10 @@ class States(StatesGroup):
 
     add_traide_lik = State()
 
+    sendler_photo = State()
+
+    ad_text = State()
+
 
 async def add_name_product(message: Message, state: FSMContext):
     name_product = message.text
@@ -129,7 +133,6 @@ async def add_traide_lik(message: Message, state: FSMContext):
     id_user = message.chat.id
 
     async with state.proxy() as data:
-
         id_product = data['id_product']
 
         _product = data['product']
@@ -162,12 +165,47 @@ async def add_traide_lik(message: Message, state: FSMContext):
                  f'Цена: {price_product} ₽\n\n' \
                  f'Трейд-ссылка: {traide_link}'
 
-    msg_ = await Sendler_msg.sendler_to_admin(message, _msg_admin, None)
+    await Sendler_msg.sendler_to_admin(message, _msg_admin, None)
 
 
+async def sendler_photo(message: Message, state: FSMContext):
+    ERROR_SCREEN = f'⚠️ Вы не верно прислали скриншот подтверждения оплаты!\n\n' \
+                   f'Пришлите мне следующим сообщением скриншот Вашего перевода\n\n'
 
-    # TODO списать баллы и отослать сообщение администратору
+    keyboard = ClientKeyb().admin_back()
 
+    if message.photo == []:
+        await message.reply(ERROR_SCREEN, reply_markup=keyboard)
+        return False
+
+    GOOD_SCREEN_MSG = f'Изображения для сообщения принято, пришлите следующим сообщением текст для рассылки'
+
+    await Sendler_msg.send_msg_message(message, GOOD_SCREEN_MSG, keyboard)
+
+    async with state.proxy() as data:
+        file_name = (f'src/telegram/media/sendler/{message.photo[-1].file_unique_id}.jpg')
+
+        try:
+            await message.photo[-1].download(destination_file=file_name)
+        except Exception as es:
+            await message.reply(f'Не смог сохранить изображение попробуйте ещё {es}')
+
+        data['add_image'] = file_name
+
+    await States.ad_text.set()
+
+
+async def ad_text(message: Message, state: FSMContext):
+    async with state.proxy() as data:
+        data['text_send'] = message.text
+
+    send_text = f'Вы ввели текст:\n\n***{data["text_send"]}***\n\nПодтверждаете отправку?'
+
+    keyb = ClientKeyb().sendler_mitting_start_keyb()
+
+    await Sendler_msg().sendler_photo_message(message, data['add_image'], send_text, keyb)
+
+    await States.ad_text.set()
 
 
 def register_state(dp: Dispatcher):
@@ -180,3 +218,7 @@ def register_state(dp: Dispatcher):
     dp.register_message_handler(add_traide_lik, state=States.add_traide_lik)
 
     dp.register_message_handler(add_img_product, state=States.add_img_product, content_types=[types.ContentType.ANY])
+
+    dp.register_message_handler(sendler_photo, state=States.sendler_photo, content_types=[types.ContentType.ANY])
+
+    dp.register_message_handler(ad_text, state=States.ad_text)

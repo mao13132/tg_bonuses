@@ -21,10 +21,10 @@ class Sendler_msg:
     async def sendler_to_admin(message: Message, text, keyb):
         for admin in ADMIN:
             try:
-                msg_ = await message.bot.send_message(int(admin), text, reply_markup=keyb)
+                msg_ = await message.bot.send_message(int(admin), text, reply_markup=keyb, disable_web_page_preview=True)
             except:
                 try:
-                    msg_ = await message.bot.send_message(int(admin), text)
+                    msg_ = await message.bot.send_message(int(admin), text, disable_web_page_preview=True)
                 except Exception as es:
                     if str(es) == 'Chat not found':
                         print(f'Бот не имеет права писать админу, напишите /start боту')

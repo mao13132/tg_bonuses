@@ -41,6 +41,14 @@ class BotDB:
         except Exception as es:
             print(f'SQL исключение check_table products {es}')
 
+        try:
+            self.cursor.execute(f"CREATE TABLE IF NOT EXISTS "
+                                f"payments (id_pk INTEGER PRIMARY KEY AUTOINCREMENT, "
+                                f"id_user TEXT, id_message TEXT, payment INT, other TEXT)")
+
+        except Exception as es:
+            print(f'SQL исключение check_table payments {es}')
+
     def check_or_add_user(self, id_user, login, status):
 
         result = self.cursor.execute(f"SELECT * FROM users WHERE id_user='{id_user}'")
@@ -108,6 +116,27 @@ class BotDB:
         response = result.fetchall()[0]
 
         return response
+
+    def get_all_users(self):
+        result = self.cursor.execute(f"SELECT id_pk, id_user FROM users")
+
+        response = result.fetchall()
+
+        return response
+
+    def delete_product(self, id_product):
+
+        try:
+            result = self.cursor.execute(f"DELETE FROM products WHERE id_pk = '{id_product}'")
+            self.conn.commit()
+            x = result.fetchall()
+        except Exception as es:
+            msg = (f'Ошибка SQL delete_product: {es}')
+            print(msg)
+
+            return False
+
+        return True
 
     def close(self):
         # Закрытие соединения

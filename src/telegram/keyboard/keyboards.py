@@ -47,7 +47,7 @@ class ClientKeyb(Call_admin):
 
         self._start_key.add(InlineKeyboardButton(text=f'🔖 Добавить товар', callback_data='add_product'))
 
-        self._start_key.add(InlineKeyboardButton(text=f'📨 Рассылка', callback_data='sendlers'))
+        self._start_key.add(InlineKeyboardButton(text=f'📨 Рассылка', callback_data='allsendler'))
 
         self._start_key.add(InlineKeyboardButton(text=f'🔙 Назад', callback_data='menu_back'))
 
@@ -108,3 +108,12 @@ class ClientKeyb(Call_admin):
         self._start_key.add(InlineKeyboardButton(text=f'🔙 Назад', callback_data='salle'))
 
         return self._start_key
+
+    def sendler_mitting_start_keyb(self):
+        self._pass_keyb = InlineKeyboardMarkup(row_width=1)
+
+        self._pass_keyb.add(InlineKeyboardButton(text=f'✅ Отправить', callback_data='ye_se_mit'))
+
+        self._pass_keyb.add(InlineKeyboardButton(text=f'❌ Отмена', callback_data='admin_menu'))
+
+        return self._pass_keyb
