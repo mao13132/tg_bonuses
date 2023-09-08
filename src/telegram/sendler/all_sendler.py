@@ -4,6 +4,8 @@ from aiogram import types
 
 
 class AllSendler:
+    """@developer_telegrams разработка программ"""
+
     def __init__(self, BotDB, call: types.CallbackQuery, data):
         self.BotDB = BotDB
         self.call = call
@@ -31,7 +33,7 @@ class AllSendler:
                         pass
 
             except Exception as es:
-                print(f'Ошибка при рассылке {client.full_name} ({id_tg}) всем {es}')
+                print(f'Ошибка при рассылке ({id_tg}) всем {es}')
                 continue
 
         os.remove(self.data['add_image'])

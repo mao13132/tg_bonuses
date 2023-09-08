@@ -1,6 +1,7 @@
 from aiogram import Dispatcher, types
 
 from src.telegram.logic._start import start
+from src.telegram.logic.devision_msg import division_message
 from src.telegram.sendler.all_sendler import AllSendler
 
 from src.telegram.sendler.sendler import *
@@ -126,8 +127,8 @@ async def salle(call: types.CallbackQuery, state: FSMContext):
 
         text_admin = (f'Каталог:\n\n')
 
-        for product in product_list_:
-            text_admin += f'{product[1]}  {product[2]}  {product[3]} ₽\n\n'
+        for count, product in enumerate(product_list_):
+            text_admin += f'{count + 1}. {product[1]}  {product[2]}  {product[3]} ₽\n\n'
 
     keyb = ClientKeyb().products_all(product_list_)
 
@@ -289,7 +290,11 @@ async def ye_se_mit(call: types.CallbackQuery, state: FSMContext):
             if data['text_send']:
                 await call.answer('Начал рассылку', show_alert=True)
         except:
-            await call.answer('Устаревшая кнопка', show_alert=True)
+            _error = 'Устаревшая кнопка'
+
+            await call.answer(_error, show_alert=True)
+
+            print(_error)
 
             return False
 
@@ -327,15 +332,19 @@ async def list_users(call: types.CallbackQuery):
 
         text_admin = (f'<b>Список пользователей:</b>\n\n')
 
-        for product in list_users_:
-            text_admin += f'ID: {product[1]} login: {product[2]} Баланс: {product[5]} ₽\n'
+        for count, product in enumerate(list_users_):
+            text_admin += f'{count + 1}. ID: {product[1]} login: {product[2]} Баланс: {product[5]} ₽\n'
 
     keyb = ClientKeyb().admin_back()
 
-    await Sendler_msg().sendler_photo_call(call, LOGO, text_admin, keyb)
+    await division_message(call.message, text_admin, keyb)
+
+    # await Sendler_msg().sendler_photo_call(call, LOGO, text_admin, keyb)
 
 
 def register_callbacks(dp: Dispatcher):
+    """@developer_telegrams разработка программ"""
+
     dp.register_callback_query_handler(admin_panel, text_contains='admin_panel', state='*')
 
     dp.register_callback_query_handler(ower_state, text_contains='ower_state', state='*')

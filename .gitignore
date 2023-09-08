@@ -4,5 +4,5 @@ src/__pycache__/
 venv/
 __pycache__/
 src/sessions/
-tg_bonus.db
+REDskinsMarket_bot.db
 

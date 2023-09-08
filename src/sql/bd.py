@@ -4,6 +4,8 @@ from datetime import datetime
 
 
 class BotDB:
+    """@developer_telegrams разработка программ"""
+
     __instance = None
 
     def __new__(cls, *args, **kwargs):
@@ -44,7 +46,7 @@ class BotDB:
         try:
             self.cursor.execute(f"CREATE TABLE IF NOT EXISTS "
                                 f"payments (id_pk INTEGER PRIMARY KEY AUTOINCREMENT, "
-                                f"id_user TEXT, id_message TEXT, payment INT, other TEXT)")
+                                f"id_user TEXT, id_message TEXT, payment INT, date DATETIME, other TEXT)")
 
         except Exception as es:
             print(f'SQL исключение check_table payments {es}')
@@ -75,6 +77,21 @@ class BotDB:
             self.cursor.execute("INSERT OR IGNORE INTO products ('name', 'descript',"
                                 "'price', 'img') VALUES (?,?,?,?)",
                                 (name, descript, price, image_patch))
+
+            self.conn.commit()
+        except:
+            return False
+
+        return True
+
+    def add_payment(self, id_user, message_id, payment):
+
+        try:
+
+            now_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            self.cursor.execute("INSERT OR IGNORE INTO payments ('id_user', 'id_message',"
+                                "'payment', 'date') VALUES (?,?,?, ?)",
+                                (id_user, message_id, payment, now_date))
 
             self.conn.commit()
         except:
@@ -163,6 +180,44 @@ class BotDB:
             return False
         else:
             return True
+
+    def exist_payment(self, id_user, id_message):
+
+        result = self.cursor.execute(f"SELECT id_pk FROM payments WHERE id_user='{id_user}' "
+                                     f"AND id_message='{id_message}'")
+
+        response = result.fetchall()
+
+        if response == []:
+            return False
+        else:
+            return True
+
+    def add_balance(self, id_user, payment):
+
+        result = self.cursor.execute(f"SELECT balance FROM users WHERE id_user='{id_user}'")
+
+        response = result.fetchall()
+
+        if response != []:
+
+            try:
+                response = response[0][0]
+            except:
+                return False
+
+            try:
+                response = int(response) + payment
+            except:
+                return False
+
+            result = self.cursor.execute(f"UPDATE users SET balance = '{response}' WHERE id_user='{id_user}'")
+
+            self.conn.commit()
+
+            return True
+
+        return False
 
     def close(self):
         # Закрытие соединения

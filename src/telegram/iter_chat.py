@@ -4,6 +4,8 @@ from settings import TELEGRAM_CHANNELS
 
 
 class IterChat:
+    """@developer_telegrams разработка программ"""
+
     def __init__(self, telegram_core, BotDB):
         self.telegram_core = telegram_core
         self.BotDB = BotDB
@@ -14,7 +16,7 @@ class IterChat:
         if not id_chat:
             return False
 
-        print(f'\n{datetime.now().strftime("%H:%M:%S")} Получаю сообщения из чата')
+        print(f'\n{datetime.now().strftime("%H:%M:%S")} запускаю анализ комментариев')
 
         dict_post = await self.telegram_core.start_monitoring_chat(id_chat)
 

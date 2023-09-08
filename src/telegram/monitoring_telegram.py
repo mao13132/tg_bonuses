@@ -9,6 +9,8 @@ from datetime import datetime, timedelta
 
 
 class MonitoringTelegram:
+    """@developer_telegrams разработка программ"""
+
     def __init__(self, sessions_patch, BotDB):
         self.BotDB = BotDB
         self.path = sessions_patch + f'/{API_ID}'
@@ -42,33 +44,59 @@ class MonitoringTelegram:
 
         return reackt_list
 
-    async def get_comments(self, message):
-        async for reply in self.app.get_discussion_replies(message.chat.username, message.id):
+    async def get_comments(self, message, chat_id):
 
-            date_post = message.date
+        total_count = 0
 
-            target_time = reply.date - date_post
+        try:
+            async for reply in self.app.get_discussion_replies(chat_id, message.id):
 
-            if reply.sticker is not None:
-                continue
+                try:
+                    id_user = reply.from_user.id
+                except:
+                    continue
 
-            print(f'Коммент: {reply.text} от {reply.from_user.id}')
+                login = reply.from_user.username
 
-            if target_time < timedelta(minutes=CHECKPOINT_ONE):
-                print(f'Комментарий до 5 минут')
+                check_payment = self.BotDB.exist_payment(id_user, message.id)
 
-                continue
+                if check_payment:
+                    continue
 
-            if target_time < timedelta(hours=CHECKPOINT_TWO):
-                print(f'Комментарий до 1 часа')
+                check_new_user = self.BotDB.check_or_add_user(id_user, login, 'no')
 
-                continue
+                date_post = message.date
 
-            print(f'Комментарий больше 1 часа')
+                target_time = reply.date - date_post
 
-            print()
+                if reply.sticker is not None:
+                    continue
 
-        return True
+                if target_time < timedelta(minutes=CHECKPOINT_ONE):
+                    res_add = self.BotDB.add_balance(id_user, PAYMENT_ONE)
+                    res_add = self.BotDB.add_payment(id_user, message.id, PAYMENT_ONE)
+
+                    total_count += 1
+
+                    continue
+
+                if target_time < timedelta(hours=CHECKPOINT_TWO):
+                    res_add = self.BotDB.add_balance(id_user, PAYMENT_TWO)
+                    res_add = self.BotDB.add_payment(id_user, message.id, PAYMENT_TWO)
+
+                    total_count += 1
+
+                    continue
+
+                res_add = self.BotDB.add_balance(id_user, PAYMENT_THREE)
+                res_add = self.BotDB.add_payment(id_user, message.id, PAYMENT_THREE)
+
+                total_count += 1
+
+        except:
+            pass
+
+        return total_count
 
     async def start_monitoring_chat(self, chat_id):
 
@@ -79,9 +107,12 @@ class MonitoringTelegram:
             if target_time > timedelta(weeks=4):
                 continue
 
-            res_get_comment = await self.get_comments(message)
+            count_comments = await self.get_comments(message, chat_id)
 
-            print()
+            if count_comments > 0:
+                print(f'{datetime.now().strftime("%H:%M:%S")} {count_comments}шт комментариев оплатил.\n'
+                      f'Пост: {message.link}\n')
+
 
     async def get_id_chat(self, name_link):
         try:

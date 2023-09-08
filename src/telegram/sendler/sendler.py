@@ -27,7 +27,7 @@ class Sendler_msg:
                     msg_ = await message.bot.send_message(int(admin), text, disable_web_page_preview=True)
                 except Exception as es:
                     if str(es) == 'Chat not found':
-                        print(f'Бот не имеет права писать админу, напишите /start боту')
+                        print(f'Бот не имеет права писать админу "{admin}", напишите /start боту')
                     else:
                         print(f'Ошибка при отправке сообщение админу текст: "{text}" {es}')
 

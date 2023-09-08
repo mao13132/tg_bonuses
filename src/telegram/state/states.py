@@ -246,6 +246,8 @@ async def zero(message: Message, state: FSMContext):
 
 
 def register_state(dp: Dispatcher):
+    """@developer_telegrams разработка программ"""
+
     dp.register_message_handler(add_name_product, state=States.add_name_product)
 
     dp.register_message_handler(add_descript_product, state=States.add_descript_product)

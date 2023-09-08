@@ -16,6 +16,8 @@ class Call_admin:
 
 
 class ClientKeyb(Call_admin):
+    """@developer_telegrams разработка программ"""
+
     def start_keyb(self, id_user):
         self._start_key = InlineKeyboardMarkup(row_width=1)
 
@@ -118,6 +120,6 @@ class ClientKeyb(Call_admin):
 
         self._pass_keyb.add(InlineKeyboardButton(text=f'✅ Отправить', callback_data='ye_se_mit'))
 
-        self._pass_keyb.add(InlineKeyboardButton(text=f'❌ Отмена', callback_data='admin_menu'))
+        self._pass_keyb.add(InlineKeyboardButton(text=f'❌ Отмена', callback_data='admin_panel'))
 
         return self._pass_keyb
